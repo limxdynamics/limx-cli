@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Node.js-22-2f6feb" alt="Node.js 22">
   <a href="https://github.com/limxdynamics/limxdynamics/blob/main/doc/wechat_qr.png"><img src="https://img.shields.io/badge/%E5%BE%AE%E4%BF%A1-%E5%BC%80%E5%8F%91%E8%80%85%E7%A4%BE%E5%8C%BA-07C160?logo=wechat&logoColor=white" alt="微信开发者社区"></a>
 </p>
+<p align="center"><sub>合作采购请联系 <a href="mailto:opensource@limxdynamics.com">opensource@limxdynamics.com</a></sub></p>
 
 LimX CLI 是运行在 LimX 机器人 WebSocket API 之上的技能控制与编排层。它把机器人复杂的 `request_*` 控制接口封装成两类更容易使用的入口：
 
