@@ -4,6 +4,11 @@ All notable changes to LimX CLI are documented here.
 
 ## Unreleased
 
+### Documentation
+
+- Restructured `README.md` and `README_cn.md` (highlights, command-group table, 30-second dry-run quick start, compliance sections at the end) and kept both languages in sync.
+- Added README images rendered from the LimX Oli MuJoCo model and diagrams: `docs/limx-cli-banner.png`, `docs/limx-cli-social-preview.png`, `docs/limx-cli-flow.png`, `docs/limx-cli-flow-cn.png`, `docs/limx-cli-walk-timeline.png`, `docs/limx-cli-walk-timeline-cn.png`. `docs/limx-cli-architecture.svg` is kept because `NOTICE` references it.
+
 ### Fixed
 
 - Ensure `websocket-client` is included in copyable deployment bundles by exposing it through legacy `setup.py` metadata and failing target builds if the bundled Python runtime is missing the `websocket` package.

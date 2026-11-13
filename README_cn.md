@@ -1,6 +1,8 @@
-# LimX CLI
+<p align="center">
+  <img src="docs/limx-cli-banner.png" alt="LimX CLI：LimX Oli 人形机器人站立、行走、挥手、跳舞，即 limx-cli 可调用的技能" width="100%">
+</p>
 
-[English](README.md) | 中文
+<p align="center"><a href="README.md">English</a> | 中文</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2f6feb" alt="License: Apache-2.0"></a>
@@ -10,32 +12,45 @@
 </p>
 <p align="center"><sub>合作采购请联系 <a href="mailto:opensource@limxdynamics.com">opensource@limxdynamics.com</a></sub></p>
 
+# LimX CLI
+
 LimX CLI 是运行在 LimX 机器人 WebSocket API 之上的技能控制与编排层。它把机器人复杂的 `request_*` 控制接口封装成两类更容易使用的入口：
 
 - `limx-cli`：面向 AI Agent、自动化脚本和开发者的命令行工具。
 - `limx-scratch`：面向 Scratch 图形化编程的本地服务，内置 `LimX Robot` 积木扩展。
 
-它适用于机器人技能检查、演示、教学、自动化脚本和安全的 Agent 辅助操作。它不是机器人控制栈、固件、安全控制器或 signaling 服务本身的替代品；也不提供云账号管理、机群管理、长期生产编排，或超出 signaling 控制锁 API 之外的权限策略执行能力。
+> 当前状态：`0.1.0` 首个开源发布候选版本。CLI 与 Scratch bridge 可用于本地开发和机器人冒烟测试；硬件覆盖当前聚焦 Oli 风格工作流，其它机器人系列和生产部署方式仍需额外验证。
 
-当前状态：`0.1.0` 首个开源发布候选版本。CLI 与 Scratch bridge 可用于本地开发和机器人冒烟测试；硬件覆盖当前聚焦 Oli 风格工作流，其它机器人系列和生产部署方式仍需额外验证。
+## 亮点
 
-![LimX CLI 软件架构](docs/limx-cli-architecture.svg)
+- **一条命令行管住整台机器人。** 8 个命令分组覆盖状态、运动、动作、舞蹈、表情、音频、控制锁和原始 `request_*` 调用。
+- **为 Agent 和脚本设计。** 所有命令默认输出 JSON，随仓库提供的 [`SKILL.md`](SKILL.md) 能让 OpenClaw、ZeroClaw、Cursor、Claude Code 安全地驱动机器人。
+- **先演练，再动作。** `--dry-run` 不连接机器人，只打印将要发送的请求；`motion walk` 必须带 `--duration`，结束时自动发送零速度停止。
+- **拖积木，不用写代码。** `limx-scratch` 提供带 `LimX Robot` 积木分类的 Scratch 编辑器，课堂和演示可以直接用积木编排 Oli。
+- **复制即可运行。** CMake 生成的可安装 bundle 自带 Node.js runtime，目标机器无需安装系统 Node.js。
 
-## 1. 特性
+## 能做什么
 
-- **低门槛使用**：普通用户可以用积木编排机器人行为，开发者和 Agent 可以用 CLI 调用同一套能力。
-- **支持 Oli 机器人**：支持状态查询、运动控制、动作、舞蹈、表情和音量等常用技能，其它机器人敬请期待。
-- **适合自动化**：CLI 支持 JSON 输出和 dry-run，便于脚本、AI Agent 和测试流程集成。
-- **易于部署**：通过 CMake 生成可安装 bundle，安装后可直接使用 `limx-cli` 和 `limx-scratch`。
+| 分组 | 子命令 | 示例 |
+| --- | --- | --- |
+| `state` | `mode` `joint` `imu` `pose` | `limx-cli state mode` |
+| `motion` | `walk` `standup` `sit` `lie-down` `prepare` `zero-torque` `calibrate` | `limx-cli motion walk --x 0.1 --duration 2` |
+| `action` | `list` `status` `enter` `exit` `stop` `run` | `limx-cli action run --name wave_greet_bye --timeout 120` |
+| `dance` | `list` `enter` `exit` `stop` `run` | `limx-cli dance run --rc-mapping solo_shake --timeout 660` |
+| `emoji` | `list` `set` `set-default` `get-default` `delete` | `limx-cli emoji set smile` |
+| `audio` | `set-volume` `play-file` `playback` | `limx-cli audio set-volume 60` |
+| `lock` | `acquire` `release` `info` | `limx-cli lock info` |
+| `raw` | 任意 `request_*` 标题 | `limx-cli --dry-run raw request_get_robot_status` |
 
-## 2. 适用对象
+同样的技能，在真实 Oli 机器人上用 Scratch 积木编排：
 
-- 需要脚本化访问 LimX signaling WebSocket API 的机器人应用开发者。
-- 需要 JSON 优先、支持 dry-run 的机器人技能入口的 AI Agent 工具构建者。
-- 希望用 Scratch 风格图形化编程编排机器人行为的教学、演示和运营人员。
-- 希望改进 CLI、Scratch bridge、文档、打包或测试的贡献者。
+![Oli Robot Scratch 图形化编程演示](docs/oli-robot-programming.gif)
 
-## 3. 架构概览
+## 工作原理
+
+<p align="center">
+  <img src="docs/limx-cli-flow-cn.png" alt="Scratch 积木经 limx-scratch HTTP bridge 调用 limx-cli；Agent 和脚本直接调用 limx-cli；limx-cli 向机器人 WebSocket API 发送 request_* 消息" width="100%">
+</p>
 
 典型链路如下：
 
@@ -44,7 +59,27 @@ LimX CLI 是运行在 LimX 机器人 WebSocket API 之上的技能控制与编�
 3. `limx-cli` 将高层技能命令转换为 WebSocket API `request_*` 消息。
 4. WebSocket API 把请求交给机器人控制系统。
 
-## 4. 前置条件
+## 30 秒快速开始
+
+不需要机器人，也不需要 CMake。`--dry-run` 会显示将要发给机器人的请求：
+
+```bash
+git clone https://github.com/limxdynamics/limx-cli.git
+cd limx-cli
+python3 -m venv .venv && . .venv/bin/activate
+pip install .
+limx-cli --dry-run motion walk --x 0.1 --duration 3
+```
+
+机器人在同一网络时，去掉 `--dry-run` 并指定机器人地址：
+
+```bash
+limx-cli --host 10.192.1.2 --port 5000 state mode
+```
+
+`pip install .` 安装的是 `limx-cli`。`limx-scratch` 使用的 Scratch 编辑器来自 CMake bundle，见 [CMake 编译和安装](#cmake-编译和安装)。
+
+## 前置条件
 
 - Linux x86_64 或 aarch64。
 - Python `>= 3.8`。
@@ -84,7 +119,7 @@ python3 -m pip install websocket-client
 python3 -m pip install pytest
 ```
 
-## 5. 快速开始
+从测试到安装 bundle 的完整开发流程：
 
 ```bash
 cd limx-cli
@@ -107,7 +142,7 @@ limx-scratch --listen-host 0.0.0.0 --listen-port 6080
 
 执行高风险运动、动作、舞蹈、音频或屏显变更前，请优先使用 `--dry-run`。
 
-## 6. CMake 编译和安装
+## CMake 编译和安装
 
 通过 CMake 编译安装：
 
@@ -150,9 +185,9 @@ sudo cmake --install build --prefix /usr/local
 - `limx-scratch` 位于 `/usr/local/bin/limx-scratch`。
 - 运行时资源位于 `/usr/local/bin/limx-cli.bin/`。
 
-## 7. 使用说明
+## 使用说明
 
-### 5.1 配置机器人连接
+### 配置机器人连接
 
 默认连接 `10.192.1.2:5000`。可以用命令行参数覆盖：
 
@@ -167,7 +202,7 @@ export LIMX_ROBOT_HOST=10.192.1.2
 export LIMX_ROBOT_PORT=5000
 ```
 
-### 5.2 CLI
+### CLI
 
 常用命令：
 
@@ -202,15 +237,19 @@ limx-cli action list
 limx-cli --dry-run motion walk --x 0.1 --duration 3
 ```
 
-`--dry-run` 会展示计划发送的请求，但不会真实控制机器人。
+`--dry-run` 会展示计划发送的请求，但不会真实控制机器人。`motion walk` 的计划如下：
 
-### 5.3 Agent Skill 使用
+<p align="center">
+  <img src="docs/limx-cli-walk-timeline-cn.png" alt="motion walk 先发送 request_set_walk_mode，再以 10 Hz 发送 30 次 request_set_walk_vel_sync，持续 3 秒，最后发送零速度 request_set_walk_vel_sync" width="100%">
+</p>
+
+### Agent Skill 使用
 
 仓库提供了 `SKILL.md`，用于让 OpenClaw、ZeroClaw、Cursor、Claude Code 等支持 Agent Skill 的工具理解如何安全调用 `limx-cli`。
 
 使用方式：
 
-1. 先按第 4 节安装 `limx-cli`，确认当前 shell 可以直接执行：
+1. 先按 [前置条件](#前置条件) 安装 `limx-cli`，确认当前 shell 可以直接执行：
 
 ```bash
 limx-cli --help
@@ -243,9 +282,7 @@ dry-run 规划一次向前走 0.1m/s 持续 3 秒
 
 `SKILL.md` 会指导 Agent 优先使用 JSON 输出、先 dry-run 高风险动作，并通过已有 CLI 子命令调用机器人能力。
 
-### 5.4 Scratch 图形化编程
-
-![Oli Robot Scratch 图形化编程演示](docs/oli-robot-programming.gif)
+### Scratch 图形化编程
 
 启动 Scratch 本地服务：
 
@@ -277,7 +314,7 @@ Scratch 页面会出现 `LimX Robot` 分类，常用积木包括：
 limx-scratch --dry-run
 ```
 
-## 8. 环境变量
+## 环境变量
 
 | 环境变量 | 默认值 | 说明 |
 | --- | --- | --- |
@@ -288,7 +325,7 @@ limx-scratch --dry-run
 | `LIMX_SCRATCH_MENU_TIMEOUT` | `5` | 动作/舞蹈菜单预加载超时 |
 | `LIMX_SCRATCH_PYTHON` | `python3` | Python 可执行文件 |
 
-## 9. 测试
+## 测试
 
 运行单元测试：
 
@@ -313,7 +350,18 @@ limx-cli dance list
 limx-cli --dry-run motion walk --x 0.05 --duration 1
 ```
 
-## 10. 开源说明
+## 适用对象
+
+- 需要脚本化访问 LimX signaling WebSocket API 的机器人应用开发者。
+- 需要 JSON 优先、支持 dry-run 的机器人技能入口的 AI Agent 工具构建者。
+- 希望用 Scratch 风格图形化编程编排机器人行为的教学、演示和运营人员。
+- 希望改进 CLI、Scratch bridge、文档、打包或测试的贡献者。
+
+## 许可证
+
+见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+
+## 开源说明
 
 LimX CLI 旨在提供一个更易用、更可组合的机器人技能入口：AI Agent 可以调用，开发者可以脚本化，普通用户可以拖积木。
 
@@ -322,3 +370,11 @@ LimX CLI 旨在提供一个更易用、更可组合的机器人技能入口：AI
 - 除第三方组件外，LimX CLI 自研部分采用 Apache License 2.0。
 - `scratch-app` 基于 Scratch GUI，保留其原始 GPL-3.0 许可证声明和版权信息。
 - 如果发布内容包含 `scratch-app` 或由其构建生成的 Scratch 页面，需要同时遵守 GPL-3.0 的分发要求。
+
+## 适用范围
+
+它适用于机器人技能检查、演示、教学、自动化脚本和安全的 Agent 辅助操作。它不是机器人控制栈、固件、安全控制器或 signaling 服务本身的替代品；也不提供云账号管理、机群管理、长期生产编排，或超出 signaling 控制锁 API 之外的权限策略执行能力。
+
+## 安全
+
+安全漏洞请按 [SECURITY.md](SECURITY.md) 私下报告。贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)，版本变更见 [CHANGELOG.md](CHANGELOG.md)。
